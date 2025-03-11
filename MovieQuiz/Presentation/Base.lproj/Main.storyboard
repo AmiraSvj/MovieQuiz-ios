@@ -125,17 +125,23 @@
                                     <constraint firstItem="Mdx-Q7-yzL" firstAttribute="centerX" secondItem="40t-Ii-zTg" secondAttribute="centerX" id="nUm-fY-itz"/>
                                 </constraints>
                             </stackView>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="d0q-pS-SLt">
+                                <rect key="frame" x="197" y="438" width="20" height="20"/>
+                            </activityIndicatorView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" name="YP Black"/>
                         <constraints>
                             <constraint firstItem="40t-Ii-zTg" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="2rt-He-Q7O"/>
+                            <constraint firstItem="d0q-pS-SLt" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Imx-6L-e4H"/>
+                            <constraint firstItem="d0q-pS-SLt" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="LDc-a8-j50"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="40t-Ii-zTg" secondAttribute="trailing" constant="20" id="UVB-LB-gdR"/>
                             <constraint firstItem="40t-Ii-zTg" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="10" id="p4C-Sq-pGK"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="40t-Ii-zTg" secondAttribute="bottom" id="zt5-j1-ocM"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="activityIndicator" destination="d0q-pS-SLt" id="5LG-Ow-XAb"/>
                         <outlet property="counterLable" destination="Tu7-E7-fzL" id="wVo-bX-0pb"/>
                         <outlet property="imageView" destination="4Gl-eh-hji" id="RjS-cU-r3d"/>
                         <outlet property="textLable" destination="Mdx-Q7-yzL" id="1nZ-dQ-ufM"/>
