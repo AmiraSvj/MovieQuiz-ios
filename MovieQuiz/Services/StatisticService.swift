@@ -42,8 +42,8 @@ final class StatisticService: StatisticServiceProtocol {
             return (Double(totalCorrect) / Double(totalQuestions)) * 100.0
         }
     func store(correct count: Int, total amount: Int) {
-        let previousCorrect = storage.integer(forKey: "totalCorrectAnswers")
-        storage.set(previousCorrect + count, forKey: "totalCorrectAnswers")
+        let previousCorrect = storage.integer(forKey: Keys.totalCorrectAnswers.rawValue)
+        storage.set(previousCorrect + count, forKey: Keys.totalCorrectAnswers.rawValue)
         gamesCount += 1
         
         let newGameResult = GameResult(correct: count, total: amount, date: Date())

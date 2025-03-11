@@ -66,30 +66,48 @@ final class MovieQuizViewController: UIViewController , QuestionFactoryDelegate 
             self.imageView.layer.borderColor = UIColor.clear.cgColor
         }
     }
+    
     private func showQuizResults() {
         statisticService.store(correct: correctAnswers, total: questionsAmount)
         let bestGameDate = statisticService.bestGame.date.dateTimeString
-        let message = """
-        Ваш рекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) от \(bestGameDate)
+        let messageText = """
+        Ваш результат: \(correctAnswers)/\(questionsAmount)
+        Количество сыгранных квизов: \(statisticService.gamesCount)
+        Рекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(bestGameDate))
         Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
-        Количество игр: \(statisticService.gamesCount)
         """
+        let boldFont = UIFont(name: "YPDisplay-Bold", size: 20) ?? UIFont.boldSystemFont(ofSize: 20)
+        let mediumFont = UIFont(name: "YPDisplay-Medium", size: 13) ?? UIFont.systemFont(ofSize: 13, weight: .medium)
+        let ypBlack = UIColor.ypBlack
+        let titleAttributes: [NSAttributedString.Key: Any] = [
+            .font: boldFont,
+            .foregroundColor: ypBlack
+        ]
+        let messageAttributes: [NSAttributedString.Key: Any] = [
+            .font: mediumFont,
+            .foregroundColor: ypBlack
+        ]
+        let attributedTitle = NSAttributedString(string: "Этот раунд окончен!", attributes: titleAttributes)
+        let attributedMessage = NSAttributedString(string: messageText, attributes: messageAttributes)
         
-        let alertModel = AlertModel(
-            title: "Раунд окончен!",
-            message: message,
-            buttonText: "Сыграть ещё раз",
-            completion: { [weak self] in
-                guard let self = self else { return }
-                self.currentQuestionIndex = 0
-                self.correctAnswers = 0
-                self.questionFactory?.requestNextQuestion()
-            }
-        )
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .alert)
+        alert.setValue(attributedTitle, forKey: "attributedTitle")
+        alert.setValue(attributedMessage, forKey: "attributedMessage")
         
-        let alertPresenter = AlertPresenter()
-        alertPresenter.showAlert(model: alertModel, from: self)
+        let action = UIAlertAction(title: "Сыграть ещё раз", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            self.questionFactory?.requestNextQuestion()
+        }
+        alert.addAction(action)
+        
+        UIButton.appearance(whenContainedInInstancesOf: [UIAlertController.self]).titleLabel?.font = boldFont
+
+        present(alert, animated: true, completion: nil)
     }
+
+
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
             showQuizResults()
