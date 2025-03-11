@@ -6,14 +6,13 @@ final class MovieQuizViewController: UIViewController , QuestionFactoryDelegate 
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let factory = QuestionFactory()
-        factory.delegate = self
-        self.questionFactory = factory
-        
+       
+       imageView.layer.cornerRadius = 20
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         statisticService = StatisticService()
-        
-        factory.requestNextQuestion()
+
+        showLoadingIndicator()
+        questionFactory?.loadData()
     }
     // MARK: - QuestionFactoryDelegate
 
@@ -43,13 +42,16 @@ final class MovieQuizViewController: UIViewController , QuestionFactoryDelegate 
     private var currentQuestion: QuizQuestion?
     private var correctAnswers = 0
     private var statisticService: StatisticServiceProtocol!
+
+
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        QuizStepViewModel(
-                    image: UIImage(named: model.image) ?? UIImage(),
-                    question: model.text,
-                    questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+        return QuizStepViewModel(
+            image: UIImage(data: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
+    
     private func showAnswerResult(isCorrect: Bool) {
         if isCorrect {
             correctAnswers += 1
@@ -66,7 +68,7 @@ final class MovieQuizViewController: UIViewController , QuestionFactoryDelegate 
             self.imageView.layer.borderColor = UIColor.clear.cgColor
         }
     }
-    
+    //MARK: -ResultAlert
     private func showQuizResults() {
         statisticService.store(correct: correctAnswers, total: questionsAmount)
         let bestGameDate = statisticService.bestGame.date.dateTimeString
@@ -116,7 +118,74 @@ final class MovieQuizViewController: UIViewController , QuestionFactoryDelegate 
             questionFactory?.requestNextQuestion()
         }
     }
+    // MARK: -ERROR.alert
     
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    
+    private func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
+        activityIndicator.isHidden = true
+    }
+
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+
+        let titleFont = UIFont(name: "YPDisplay-Bold", size: 20) ?? UIFont.boldSystemFont(ofSize: 20)
+        let messageFont = UIFont(name: "YPDisplay-Medium", size: 13) ?? UIFont.systemFont(ofSize: 13, weight: .medium)
+        let ypBlack = UIColor.ypBlack
+
+        let titleAttributes: [NSAttributedString.Key: Any] = [
+            .font: titleFont,
+            .foregroundColor: ypBlack
+        ]
+
+        let messageAttributes: [NSAttributedString.Key: Any] = [
+            .font: messageFont,
+            .foregroundColor: ypBlack
+        ]
+
+        let attributedTitle = NSAttributedString(string: "Что-то пошло не так(", attributes: titleAttributes)
+        let attributedMessage = NSAttributedString(string: "Невозможно загрузить данные", attributes: messageAttributes)
+
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .alert)
+        alert.setValue(attributedTitle, forKey: "attributedTitle")
+        alert.setValue(attributedMessage, forKey: "attributedMessage")
+
+        let action = UIAlertAction(title: "Попробовать ещё раз", style: .default) { _ in
+            self.restartApp()
+        }
+        alert.addAction(action)
+
+        UIButton.appearance(whenContainedInInstancesOf: [UIAlertController.self]).titleLabel?.font = titleFont
+
+        present(alert, animated: true, completion: nil)
+    }
+
+    private func restartApp() {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = scene.windows.first else { return }
+
+        let rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController()
+        window.rootViewController = rootViewController
+        window.makeKeyAndVisible()
+    }
+
+
+    
+    
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription) 
+    }
+    
+    func didLoadDataFromServer() {
+        activityIndicator.isHidden = true
+        questionFactory?.requestNextQuestion()
+    }
+    
+//MARK: -OUTLETs
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLable: UILabel!
     @IBOutlet private var counterLable: UILabel!
@@ -136,4 +205,5 @@ final class MovieQuizViewController: UIViewController , QuestionFactoryDelegate 
         let givenAnswer = false
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
+    @IBOutlet private var activityIndicator: UIActivityIndicatorView!
 }
