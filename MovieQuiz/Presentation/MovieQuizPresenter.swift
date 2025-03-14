@@ -1,5 +1,4 @@
 import Foundation
-
 import UIKit
 
 final class MovieQuizPresenter {
@@ -41,9 +40,9 @@ final class MovieQuizPresenter {
         }
         
         viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.showNextQuestionOrResults()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            self?.showNextQuestionOrResults()
         }
     }
     

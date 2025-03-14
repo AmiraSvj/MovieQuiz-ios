@@ -12,6 +12,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     // MARK: - Презентер
     
     private var presenter: MovieQuizPresenter!
+    private lazy var alertPresenter = AlertPresenter()
     
     // MARK: - Жизненный цикл
 
@@ -36,25 +37,24 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     }
     
     func show(quiz result: QuizResultsViewModel) {
-        let alert = UIAlertController(title: result.title,
-                                      message: result.text,
-                                      preferredStyle: .alert)
-        
-        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-            self?.presenter.restartGame()
-        }
-        alert.addAction(action)
-        
-        present(alert, animated: true, completion: nil)
+        let alertModel = AlertModel(
+            title: result.title,
+            message: result.text,
+            buttonText: result.buttonText,
+            completion: { [weak self] in
+                self?.presenter.restartGame()
+            }
+        )
+        alertPresenter.showAlert(model: alertModel, from: self)
     }
     
     // MARK: - Подсветка рамки
-
-        func highlightImageBorder(isCorrectAnswer: Bool) {
-            imageView.layer.masksToBounds = true
-            imageView.layer.borderWidth = 8
-            imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        }
+    
+    func highlightImageBorder(isCorrectAnswer: Bool) {
+        imageView.layer.masksToBounds = true
+        imageView.layer.borderWidth = 8
+        imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+    }
     
     // MARK: - IBActions (Yes / No)
     
@@ -83,16 +83,14 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     func showNetworkError(message: String) {
         hideLoadingIndicator()
         
-        let alert = UIAlertController(
+        let alertModel = AlertModel(
             title: "Что-то пошло не так(",
             message: "Невозможно загрузить данные\n\(message)",
-            preferredStyle: .alert
+            buttonText: "Попробовать ещё раз",
+            completion: { [weak self] in
+                self?.presenter.loadData()
+            }
         )
-        let action = UIAlertAction(title: "Попробовать ещё раз", style: .default) { [weak self] _ in
-            self?.presenter.loadData()
-        }
-        alert.addAction(action)
-        
-        present(alert, animated: true, completion: nil)
+        alertPresenter.showAlert(model: alertModel, from: self)
     }
 }
